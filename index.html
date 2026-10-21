@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Control de Profesores - Gestión académica universitaria">
+    <title>Sistema de Control - Profesores</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===================== VARIABLES ===================== */
+        :root {
+            --primary:        #4f46e5;
+            --primary-hover:  #4338ca;
+            --primary-light:  #eef2ff;
+            --success:        #10b981;
+            --success-dark:   #059669;
+            --danger:         #ef4444;
+            --danger-dark:    #dc2626;
+            --bg:             #f1f5f9;
+            --surface:        #ffffff;
+            --surface-2:      #f8fafc;
+            --border:         #e2e8f0;
+            --text:           #0f172a;
+            --text-muted:     #64748b;
+            --text-subtle:    #94a3b8;
+            --shadow-sm:      0 1px 3px rgba(0,0,0,0.08);
+            --shadow:         0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg:      0 12px 28px rgba(0,0,0,0.14);
+            --radius:         16px;
+            --radius-sm:      10px;
+            --radius-xs:      8px;
+            --transition:     all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===================== RESET ===================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ===================== TOAST ===================== */
+        #toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            border-radius: var(--radius-xs);
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            box-shadow: var(--shadow-lg);
+            transform: translateX(calc(100% + 32px));
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: auto;
+            min-width: 280px;
+            max-width: 380px;
+        }
+
+        .toast.show { transform: translateX(0); }
+        .toast-success { background: linear-gradient(135deg, var(--success-dark), var(--success)); }
+        .toast-error   { background: linear-gradient(135deg, var(--danger-dark), var(--danger)); }
+        .toast-icon    { font-size: 18px; flex-shrink: 0; }
+
+        /* ===================== HEADER ===================== */
+        .app-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4338ca 100%);
+            color: #fff;
+            padding: 28px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -5%;
+            width: 380px;
+            height: 380px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .app-header::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: 15%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-icon { font-size: 42px; line-height: 1; }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.65);
+            margin-top: 3px;
+        }
+
+        /* ===================== LAYOUT ===================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 56px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* ===================== CARD ===================== */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+
+        .section-header h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        /* ===================== FORM ===================== */
+        form { padding: 28px; }
+
+        .form-section { margin-bottom: 24px; }
+
+        .form-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 24px 0;
+        }
+
+        /* ===================== GRID ===================== */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-group.full-width { grid-column: 1 / -1; }
+
+        /* ===================== LABELS ===================== */
+        label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .required {
+            color: var(--danger);
+            margin-left: 2px;
+        }
+
+        /* ===================== INPUTS ===================== */
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-xs);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--surface);
+            transition: var(--transition);
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-subtle);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+        }
+
+        input.input-error, select.input-error, textarea.input-error {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+            cursor: pointer;
+        }
+
+        textarea { resize: vertical; min-height: 76px; }
+
+        .field-error {
+            font-size: 12px;
+            color: var(--danger);
+            min-height: 16px;
+            display: block;
+        }
+
+        /* ===================== BUTTONS ===================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: var(--radius-xs);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #4338ca, #4f46e5);
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-muted);
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .form-actions {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ===================== TABLE ===================== */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
+        }
+
+        th {
+            padding: 13px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: rgba(255,255,255,0.9);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+
+        tbody tr {
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover { background: var(--primary-light); }
+
+        /* ===================== EMPTY STATE ===================== */
+        .empty-state {
+            text-align: center;
+            padding: 52px 20px;
+            color: var(--text-subtle);
+        }
+
+        .empty-state-icon {
+            font-size: 44px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notificaciones toast -->
+    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- Encabezado principal -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-icon">🎓</div>
+            <div>
+                <h1 class="header-title">Sistema de Control de Profesores</h1>
+                <p class="header-subtitle">Gestión académica universitaria</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- ======== FORMULARIO ======== -->
+        <section class="card" aria-label="Formulario de registro de profesor">
+            <div class="section-header">
+                <h2>Registrar Nuevo Profesor</h2>
+            </div>
+
+            <form id="formProfesor" novalidate>
+
+                <!-- Datos Personales -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <span>👤</span> Datos Personales
+                    </h3>
+                    <div class="grid-3">
+                        <div class="field-group">
+                            <label for="cedula">Cédula <span class="required" aria-hidden="true">*</span></label>
+                            <input type="text" id="cedula" placeholder="Ej: V-12345678" autocomplete="off" aria-required="true">
+                            <span class="field-error" id="error-cedula" role="alert"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="nombre">Nombre Completo <span class="required" aria-hidden="true">*</span></label>
+                            <input type="text" id="nombre" placeholder="Nombre y apellidos" autocomplete="off" aria-required="true">
+                            <span class="field-error" id="error-nombre" role="alert"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="telefono">Teléfono</label>
+                            <input type="tel" id="telefono" placeholder="Ej: 0414-1234567">
+                            <span class="field-error" id="error-telefono"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="correo">Correo Electrónico</label>
+                            <input type="email" id="correo" placeholder="correo@ejemplo.com" autocomplete="off">
+                            <span class="field-error" id="error-correo" role="alert"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="fecha_ingreso">Fecha de Ingreso</label>
+                            <input type="date" id="fecha_ingreso">
+                            <span class="field-error" id="error-fecha_ingreso"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <!-- Datos Académicos -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <span>📚</span> Datos Académicos
+                    </h3>
+                    <div class="grid-3">
+                        <div class="field-group">
+                            <label for="titulo_pregrado">Título de Pregrado</label>
+                            <input type="text" id="titulo_pregrado" placeholder="Ej: Licenciado en Educación">
+                            <span class="field-error" id="error-titulo_pregrado"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="especialidad">Especialidad</label>
+                            <input type="text" id="especialidad" placeholder="Ej: Matemáticas">
+                            <span class="field-error" id="error-especialidad"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="maestria">Maestría <span style="font-weight:400; font-size:12px;">(Opcional)</span></label>
+                            <input type="text" id="maestria" placeholder="Título de Maestría">
+                            <span class="field-error" id="error-maestria"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="doctorado">Doctorado <span style="font-weight:400; font-size:12px;">(Opcional)</span></label>
+                            <input type="text" id="doctorado" placeholder="Título de Doctorado">
+                            <span class="field-error" id="error-doctorado"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="programa">Programa</label>
+                            <input type="text" id="programa" placeholder="Programa académico">
+                            <span class="field-error" id="error-programa"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="id_pnf">Área PNF</label>
+                            <select id="id_pnf">
+                                <option value="">Seleccione Área PNF...</option>
+                                <option value="1">Informática</option>
+                                <option value="2">Contaduría Pública</option>
+                                <option value="3">Agroalimentación</option>
+                                <option value="4">Educación Especial</option>
+                                <option value="5">Historia</option>
+                            </select>
+                            <span class="field-error" id="error-id_pnf"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <!-- Datos Laborales -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <span>💼</span> Datos Laborales
+                    </h3>
+                    <div class="grid-3">
+                        <div class="field-group">
+                            <label for="condicion">Condición</label>
+                            <select id="condicion">
+                                <option value="">Seleccione condición...</option>
+                                <option value="Contratado">Contratado</option>
+                                <option value="Ordinario">Ordinario</option>
+                                <option value="Jubilado">Jubilado</option>
+                            </select>
+                            <span class="field-error" id="error-condicion"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="categoria">Categoría</label>
+                            <select id="categoria">
+                                <option value="">Seleccione categoría...</option>
+                                <option value="Instructor">Instructor</option>
+                                <option value="Asistente">Asistente</option>
+                                <option value="Agregado">Agregado</option>
+                                <option value="Asociado">Asociado</option>
+                                <option value="Titular">Titular</option>
+                            </select>
+                            <span class="field-error" id="error-categoria"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="dedicacion">Dedicación</label>
+                            <select id="dedicacion">
+                                <option value="">Seleccione dedicación...</option>
+                                <option value="Tiempo Completo">Tiempo Completo</option>
+                                <option value="Medio Tiempo">Medio Tiempo</option>
+                                <option value="Tiempo Convencional">Tiempo Convencional</option>
+                            </select>
+                            <span class="field-error" id="error-dedicacion"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="id_sede">Sede</label>
+                            <select id="id_sede">
+                                <option value="1">Sede Principal</option>
+                            </select>
+                            <span class="field-error" id="error-id_sede"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="proyecto">Proyecto</label>
+                            <input type="text" id="proyecto" placeholder="Nombre del proyecto">
+                            <span class="field-error" id="error-proyecto"></span>
+                        </div>
+                        <div class="field-group full-width">
+                            <label for="observaciones">Observaciones</label>
+                            <textarea id="observaciones" rows="3" placeholder="Información adicional sobre el profesor..."></textarea>
+                            <span class="field-error" id="error-observaciones"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="btnGuardar" class="btn btn-primary">
+                        <span>💾</span> Guardar Profesor
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- ======== TABLA ======== -->
+        <section class="card" aria-label="Listado de profesores registrados">
+            <div class="section-header">
+                <h2>Profesores Registrados</h2>
+                <button id="btnCargar" class="btn btn-secondary">
+                    <span>🔄</span> Refrescar
+                </button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Nombre Completo</th>
+                            <th>Área PNF</th>
+                            <th>Condición</th>
+                            <th>Categoría</th>
+                            <th>Dedicación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaProfesores"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
