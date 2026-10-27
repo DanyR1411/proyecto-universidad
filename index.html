@@ -1,171 +1,145 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de Control - Profesores</title>
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src about:">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Control de Personal</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f6f9;
-        }
-
-        .formulario {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .full-width {
-            grid-column: 1 / -1;
-        }
-
-        input,
-        select,
-        textarea {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        h3 {
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            color: #2c3e50;
-            font-size: 16px;
-            margin-top: 0;
-        }
-
-        button {
-            padding: 10px 20px;
-            background: #2980b9;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        button:hover {
-            background: #3498db;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: #fff;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        th {
-            background-color: #2c3e50;
-            color: white;
-        }
+        :root { --azul: #2c3e50; --azul-2: #2980b9; --verde: #27ae60; --gris: #f4f6f9; --borde: #d5dbe1; --texto: #1e2a35; }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background: var(--gris); color: var(--texto); display: flex; flex-direction: column; }
+        header.barra { background: var(--azul); color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 16px; }
+        header.barra h1 { font-size: 18px; margin: 0; }
+        #resumenBD { font-size: 13px; opacity: .85; flex: 1; }
+        main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 14px 20px; }
+        .panel { background: #fff; border: 1px solid var(--borde); border-radius: 8px; padding: 12px 14px; }
+        button { font: inherit; font-size: 13px; padding: 8px 14px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; background: var(--azul-2); color: #fff; }
+        button:hover:not(:disabled) { filter: brightness(1.1); }
+        button:disabled { opacity: .5; cursor: default; }
+        button.sec { background: #fff; color: var(--azul); border-color: var(--borde); }
+        button.verde { background: var(--verde); }
+        button.enlace { background: none; color: var(--azul-2); padding: 0; border: 0; text-align: left; font-weight: 600; }
+        button.enlace:hover { text-decoration: underline; }
+        input[type=search], select { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #b9c2cb; border-radius: 6px; background: #fff; width: 100%; }
+        .busqueda { display: flex; flex-direction: column; gap: 10px; }
+        .filtros { display: grid; grid-template-columns: repeat(6, 1fr) auto; gap: 10px; align-items: end; }
+        .filtros label { font-size: 12px; color: #52606d; display: flex; flex-direction: column; gap: 3px; }
+        details.campos summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+        details.campos summary small { font-weight: normal; color: #52606d; margin-left: 8px; }
+        .nota { font-size: 12px; color: #52606d; margin: 8px 0; }
+        .grupo-campos { margin-top: 8px; }
+        .grupo-campos h4 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--azul); }
+        .casillas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 12px; }
+        .casillas label { font-size: 13px; display: flex; gap: 6px; align-items: center; }
+        .casillas label.fijo { color: #6b7783; }
+        .atajos { margin-top: 10px; display: flex; gap: 8px; }
+        .resultados { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+        .barra-res { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .barra-res .espacio { flex: 1; }
+        #contador { font-size: 13px; color: #3b4a58; }
+        .tabla-wrap { flex: 1; min-height: 120px; overflow: auto; border: 1px solid var(--borde); border-radius: 6px; }
+        table { border-collapse: collapse; width: 100%; background: #fff; }
+        th, td { padding: 8px 10px; border-bottom: 1px solid #e6eaee; text-align: left; font-size: 13px; vertical-align: top; }
+        thead th { position: sticky; top: 0; background: var(--azul); color: #fff; z-index: 1; }
+        tbody tr:hover { background: #f1f7fc; }
+        tbody tr.marcada { background: #e6f2fb; }
+        td.chk, th.chk { width: 34px; text-align: center; }
+        #vacio { text-align: center; color: #52606d; padding: 24px; }
+        dialog { border: 0; border-radius: 10px; padding: 0; box-shadow: 0 10px 40px rgba(0,0,0,.35); width: min(860px, 94vw); }
+        dialog::backdrop { background: rgba(20, 30, 40, .5); }
+        .dlg-barra { display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: var(--azul); color: #fff; }
+        .dlg-barra strong { flex: 1; }
+        #marcoFicha { width: 100%; height: 70vh; border: 0; background: #fff; }
+        #dlgImport pre { margin: 0; padding: 16px; font-size: 13px; white-space: pre-wrap; max-height: 60vh; overflow: auto; }
+        .dlg-pie { padding: 10px 14px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--borde); }
+        #toast-container { position: fixed; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
+        .toast { background: #fff; border-left: 5px solid var(--verde); padding: 10px 14px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.25); font-size: 13px; max-width: 360px; opacity: 0; transform: translateY(8px); transition: all .25s; }
+        .toast.show { opacity: 1; transform: none; }
+        .toast-error { border-left-color: #c0392b; }
     </style>
 </head>
-
 <body>
+    <header class="barra">
+        <h1>Control de Personal</h1>
+        <span id="resumenBD"></span>
+        <button id="btnImportar" class="sec">Importar Excel…</button>
+    </header>
 
-    <div class="formulario">
-        <h2>Registrar Nuevo Profesor</h2>
+    <main>
+        <section class="panel busqueda">
+            <input id="texto" type="search" autofocus autocomplete="off"
+                   placeholder="Buscar por nombre, cédula, correo o teléfono…">
+            <div class="filtros">
+                <label>Período <select id="f-periodo"></select></label>
+                <label>PNF <select id="f-id_pnf"></select></label>
+                <label>Sede <select id="f-id_sede"></select></label>
+                <label>Condición <select id="f-condicion"></select></label>
+                <label>Categoría <select id="f-categoria"></select></label>
+                <label>Dedicación <select id="f-dedicacion"></select></label>
+                <button id="btnLimpiar" class="sec">Limpiar</button>
+            </div>
+        </section>
 
-        <h3>Datos Personales</h3>
-        <div class="grid-3">
-            <input type="text" id="cedula" placeholder="Cédula (Ej: V-12345678)">
-            <input type="text" id="nombre" placeholder="Nombre Completo">
-            <input type="text" id="telefono" placeholder="Teléfono">
-            <input type="email" id="correo" placeholder="Correo Electrónico">
-            <input type="date" id="fecha_ingreso" title="Fecha de Ingreso">
+        <details class="panel campos" id="panelCampos">
+            <summary>Datos a incluir al imprimir <small id="resumenCampos"></small></summary>
+            <p class="nota">Nombre completo, cédula, teléfono y correo siempre se incluyen. Marca los demás datos que quieras agregar.</p>
+            <div id="listaCampos"></div>
+            <div class="atajos">
+                <button class="sec" id="btnSoloBasico">Solo lo básico</button>
+                <button class="sec" id="btnMarcarTodo">Marcar todo</button>
+            </div>
+        </details>
+
+        <section class="panel resultados">
+            <div class="barra-res">
+                <label><input type="checkbox" id="chkTodos"> Seleccionar todos</label>
+                <span id="contador"></span>
+                <button id="btnQuitarSel" class="sec" hidden>Quitar selección</button>
+                <span class="espacio"></span>
+                <button id="btnListado" class="verde">🖨 Imprimir listado</button>
+                <button id="btnListadoPdf" class="sec">Listado en PDF</button>
+                <button id="btnFichas" class="verde">🖨 Imprimir fichas</button>
+                <button id="btnFichasPdf" class="sec">Fichas en PDF</button>
+            </div>
+            <div class="nota" id="notaImpresion"></div>
+            <div class="tabla-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="chk"></th><th>Nombre</th><th>Cédula</th><th>Teléfono</th>
+                            <th>Correo</th><th>PNF</th><th>Sede</th><th>Condición</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filas"></tbody>
+                </table>
+                <div id="vacio" hidden></div>
+            </div>
+        </section>
+    </main>
+
+    <dialog id="dlgFicha">
+        <div class="dlg-barra">
+            <strong id="dlgTitulo">Ficha</strong>
+            <button id="dlgImprimir" class="verde">🖨 Imprimir</button>
+            <button id="dlgPdf" class="sec">PDF</button>
+            <button id="dlgCerrar" class="sec">Cerrar</button>
         </div>
+        <iframe id="marcoFicha" sandbox title="Ficha de la persona"></iframe>
+    </dialog>
 
-        <h3>Datos Académicos</h3>
-        <div class="grid-3">
-            <input type="text" id="titulo_pregrado" placeholder="Título de Pregrado">
-            <input type="text" id="especialidad" placeholder="Especialidad">
-            <input type="text" id="maestria" placeholder="Maestría (Opcional)">
-            <input type="text" id="doctorado" placeholder="Doctorado (Opcional)">
-            <input type="text" id="programa" placeholder="Programa">
-            <select id="id_pnf">
-                <option value="">Seleccione Área PNF...</option>
-                <option value="1">Informática</option>
-                <option value="2">Contaduría Pública</option>
-                <option value="3">Agroalimentación</option>
-                <option value="4">Educación Especial</option>
-                <option value="5">Historia</option>
-            </select>
+    <dialog id="dlgImport">
+        <div class="dlg-barra"><strong>Resultado de la importación</strong></div>
+        <pre id="reporteImport"></pre>
+        <div class="dlg-pie">
+            <button id="btnVerInforme" class="sec">Ver informe de avisos</button>
+            <button id="dlgImpCerrar">Aceptar</button>
         </div>
+    </dialog>
 
-        <h3>Datos Laborales</h3>
-        <div class="grid-3">
-            <select id="condicion">
-                <option value="">Condición...</option>
-                <option value="Contratado">Contratado</option>
-                <option value="Ordinario">Ordinario</option>
-                <option value="Jubilado">Jubilado</option>
-            </select>
-            <select id="categoria">
-                <option value="">Categoría...</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Asistente">Asistente</option>
-                <option value="Agregado">Agregado</option>
-                <option value="Asociado">Asociado</option>
-                <option value="Titular">Titular</option>
-            </select>
-            <select id="dedicacion">
-                <option value="">Dedicación...</option>
-                <option value="Tiempo Completo">Tiempo Completo</option>
-                <option value="Medio Tiempo">Medio Tiempo</option>
-                <option value="Tiempo Convencional">Tiempo Convencional</option>
-            </select>
-            <select id="id_sede">
-                <option value="1">Sede Principal (Por defecto)</option>
-            </select>
-            <input type="text" id="proyecto" placeholder="Proyecto">
-            <textarea id="observaciones" class="full-width" placeholder="Observaciones" rows="2"></textarea>
-        </div>
-
-        <button id="btnGuardar">Guardar Profesor</button>
-    </div>
-
-    <!-- Resto de tu HTML (La tabla) -->
-    <hr>
-    <h2>Listado de Profesores Registrados</h2>
-    <button id="btnCargar" style="background:#27ae60;">Refrescar Tabla</button>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Cédula</th>
-                <th>Nombre</th>
-                <th>Área PNF</th>
-                <th>Condición</th>
-                <th>Categoría</th>
-                <th>Dedicación</th>
-            </tr>
-        </thead>
-        <tbody id="tablaProfesores"></tbody>
-    </table>
-
+    <div id="toast-container"></div>
     <script src="renderer.js"></script>
 </body>
-
 </html>

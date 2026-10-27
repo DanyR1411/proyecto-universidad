@@ -1,0 +1,8 @@
+
+# =============================================
+# Datos personales (cédulas, teléfonos, correos)
+# NUNCA subir los Excel originales ni los informes de importación
+# =============================================
+*.xlsx
+*.xls
+datos/

@@ -1,7 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Exponemos las dos funciones para que el HTML pueda usarlas
+// Solo se expone lo estrictamente necesario al renderer
 contextBridge.exposeInMainWorld('baseDatos', {
-    registrarProfesor: (datos) => ipcRenderer.invoke('registrar-profesor', datos),
-    obtenerProfesores: () => ipcRenderer.invoke('obtener-profesores')
+    obtenerCampos: () => ipcRenderer.invoke('campos'),
+    obtenerFiltros: () => ipcRenderer.invoke('filtros'),
+    resumen: () => ipcRenderer.invoke('resumen'),
+    buscar: (filtros) => ipcRenderer.invoke('buscar', filtros),
+    fichaHTML: (datos) => ipcRenderer.invoke('ficha-html', datos),
+    imprimir: (datos) => ipcRenderer.invoke('imprimir', datos),
+    importarExcel: () => ipcRenderer.invoke('importar-excel'),
+    mostrarInforme: () => ipcRenderer.invoke('mostrar-informe')
 });

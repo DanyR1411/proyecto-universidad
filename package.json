@@ -1,11 +1,12 @@
 {
   "name": "proyecto-universidad",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sistema de control de profesores universitarios",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "importar": "node scripts/importar-cli.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "electron": "^33.0.0"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "sqlite3": "^6.0.1"
   }
 }
